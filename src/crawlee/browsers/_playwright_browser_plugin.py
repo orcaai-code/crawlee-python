@@ -33,6 +33,7 @@ class PlaywrightBrowserPlugin(BaseBrowserPlugin):
         browser_options: Mapping[str, Any] | None = None,
         page_options: Mapping[str, Any] | None = None,
         max_open_pages_per_browser: int = 20,
+        cookies: Mapping[str, Any] | None = None,
     ) -> None:
         """Create a new instance.
 
@@ -50,6 +51,7 @@ class PlaywrightBrowserPlugin(BaseBrowserPlugin):
 
         self._playwright_context_manager = async_playwright()
         self._playwright: Playwright | None = None
+        self._cookies = cookies
 
     @property
     @override
@@ -93,13 +95,17 @@ class PlaywrightBrowserPlugin(BaseBrowserPlugin):
             raise RuntimeError('Playwright browser plugin is not initialized.')
 
         if self._browser_type == 'chromium':
-            browser = await self._playwright.chromium.launch(**self._browser_options)
+            browser = await self._playwright.chromium.launch_persistent_context(user_data_dir='', **self._browser_options)
         elif self._browser_type == 'firefox':
             browser = await self._playwright.firefox.launch(**self._browser_options)
         elif self._browser_type == 'webkit':
             browser = await self._playwright.webkit.launch(**self._browser_options)
         else:
             raise ValueError(f'Invalid browser type: {self._browser_type}')
+
+        # TODO(Ishaan): Clean this up.
+        if self._cookies:
+            await browser.add_cookies(self._cookies)
 
         return PlaywrightBrowserController(
             browser,

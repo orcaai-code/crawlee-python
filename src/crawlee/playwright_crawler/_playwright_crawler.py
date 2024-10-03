@@ -143,7 +143,7 @@ class PlaywrightCrawler(BasicCrawler[PlaywrightCrawlingContext]):
                             link_user_data.setdefault('label', label)
 
                         try:
-                            request = BaseRequestData.from_url(url, user_data=link_user_data)
+                            request = BaseRequestData.from_url(url, user_data=link_user_data, keep_url_fragment=True)
                         except ValidationError as exc:
                             context.log.debug(
                                 f'Skipping URL "{url}" due to invalid format: {exc}. '

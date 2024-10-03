@@ -10,10 +10,10 @@ from typing_extensions import override
 
 from crawlee.browsers._base_browser_controller import BaseBrowserController
 
+from playwright.async_api import Browser
+
 if TYPE_CHECKING:
     from collections.abc import Mapping
-
-    from playwright.async_api import Browser
 
     from crawlee.proxy_configuration import ProxyInfo
 
@@ -68,7 +68,10 @@ class PlaywrightBrowserController(BaseBrowserController):
     @property
     @override
     def is_browser_connected(self) -> bool:
-        return self._browser.is_connected()
+        if isinstance(self._browser, Browser):
+            return self._browser.is_connected()
+        else:
+            return True
 
     @override
     async def new_page(
